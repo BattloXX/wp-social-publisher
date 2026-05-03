@@ -3,8 +3,8 @@
  * Plugin Name: FWW Social Publisher
  * Plugin URI:  https://feuerwehr.wolfurt.at
  * Description: Publishes posts to Facebook, Instagram and Telegram for Feuerwehr Wolfurt. Includes WhatsApp copy helper. Uses social media text from KI Content Creator when available.
- * Version:     1.1.0
- * Author:      Feuerwehr Wolfurt
+ * Version:     1.2.0
+ * Author:      Johannes Battlogg
  * Author URI:  https://feuerwehr.wolfurt.at
  * License:     GPL-2.0-or-later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'FWW_SP_VERSION',    '1.1.0' );
+define( 'FWW_SP_VERSION',    '1.2.0' );
 define( 'FWW_SP_PLUGIN_FILE', __FILE__ );
 define( 'FWW_SP_PLUGIN_DIR',  plugin_dir_path( __FILE__ ) );
 define( 'FWW_SP_PLUGIN_URL',  plugin_dir_url( __FILE__ ) );

@@ -67,15 +67,13 @@ class FWW_Facebook_API {
 			);
 		}
 
-		$url = add_query_arg(
-			[
-				'fields'       => 'name,id',
-				'access_token' => $token,
-			],
-			self::API_BASE . '/' . rawurlencode( $page_id )
-		);
+		// Send token via Authorization header to keep it out of server access logs.
+		$url = add_query_arg( [ 'fields' => 'name,id' ], self::API_BASE . '/' . rawurlencode( $page_id ) );
 
-		$response = wp_remote_get( $url, [ 'timeout' => 15 ] );
+		$response = wp_remote_get( $url, [
+			'timeout' => 15,
+			'headers' => [ 'Authorization' => 'Bearer ' . $token ],
+		] );
 
 		if ( is_wp_error( $response ) ) {
 			return $response;

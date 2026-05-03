@@ -122,7 +122,7 @@ class FWW_Social_Publisher {
 		$clean['auto_post_facebook']   = ! empty( $input['auto_post_facebook'] )  ? 1 : 0;
 		$clean['auto_post_instagram']  = ! empty( $input['auto_post_instagram'] ) ? 1 : 0;
 		$clean['auto_post_telegram']   = ! empty( $input['auto_post_telegram'] )  ? 1 : 0;
-		$clean['ki_meta_key']          = sanitize_key( $input['ki_meta_key'] ?? '_ki_social_media_text' );
+		$clean['ki_meta_key']          = sanitize_text_field( $input['ki_meta_key'] ?? '_ki_social_media_text' );
 
 		$cats = $input['category_filter'] ?? [];
 		$clean['category_filter'] = is_array( $cats ) ? array_map( 'absint', $cats ) : [];
@@ -271,9 +271,9 @@ class FWW_Social_Publisher {
 		}
 
 		$message      = $this->get_social_text( $post_id );
-		$permalink    = get_permalink( $post_id );
+		$permalink    = (string) get_permalink( $post_id );
 		$thumbnail_id = get_post_thumbnail_id( $post_id );
-		$image_url    = $thumbnail_id ? wp_get_attachment_image_url( $thumbnail_id, 'large' ) : '';
+		$image_url    = $thumbnail_id ? ( (string) wp_get_attachment_image_url( $thumbnail_id, 'large' ) ) : '';
 
 		$api    = new FWW_Facebook_API();
 		$result = $image_url
@@ -314,8 +314,8 @@ class FWW_Social_Publisher {
 			return false;
 		}
 
-		$caption   = $this->get_social_text( $post_id ) . "\n\n" . get_permalink( $post_id );
-		$image_url = wp_get_attachment_image_url( $thumbnail_id, 'large' );
+		$caption   = $this->get_social_text( $post_id ) . "\n\n" . (string) get_permalink( $post_id );
+		$image_url = (string) wp_get_attachment_image_url( $thumbnail_id, 'large' );
 
 		$api    = new FWW_Instagram_API();
 		$result = $api->post( $ig_id, $token, $image_url, $caption );
@@ -350,16 +350,16 @@ class FWW_Social_Publisher {
 
 		$title         = get_the_title( $post_id );
 		$social_text   = $this->get_social_text( $post_id );
-		$permalink     = get_permalink( $post_id );
+		$permalink     = (string) get_permalink( $post_id );
 		$thumbnail_id  = get_post_thumbnail_id( $post_id );
-		$image_url     = $thumbnail_id ? wp_get_attachment_image_url( $thumbnail_id, 'large' ) : '';
+		$image_url     = $thumbnail_id ? ( (string) wp_get_attachment_image_url( $thumbnail_id, 'large' ) ) : '';
 
-		// Build HTML-formatted message.
-		$text = '<b>' . htmlspecialchars( $title, ENT_QUOTES | ENT_HTML5, 'UTF-8' ) . '</b>'
+		// Build HTML-formatted message. All parts are escaped for Telegram's HTML parse mode.
+		$text = '<b>' . htmlspecialchars( $title,       ENT_QUOTES | ENT_HTML5, 'UTF-8' ) . '</b>'
 			. "\n\n"
 			. htmlspecialchars( $social_text, ENT_QUOTES | ENT_HTML5, 'UTF-8' )
 			. "\n\n"
-			. $permalink;
+			. htmlspecialchars( $permalink,   ENT_QUOTES | ENT_HTML5, 'UTF-8' );
 
 		$api    = new FWW_Telegram_API();
 		$result = $api->post( $chat_id, $token, $text, $image_url );

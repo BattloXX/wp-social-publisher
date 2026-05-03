@@ -76,15 +76,13 @@ class FWW_Instagram_API {
 			);
 		}
 
-		$url = add_query_arg(
-			[
-				'fields'       => 'id,username,name',
-				'access_token' => $token,
-			],
-			self::API_BASE . '/' . rawurlencode( $ig_id )
-		);
+		// Send token via Authorization header to keep it out of server access logs.
+		$url = add_query_arg( [ 'fields' => 'id,username,name' ], self::API_BASE . '/' . rawurlencode( $ig_id ) );
 
-		$response = wp_remote_get( $url, [ 'timeout' => 15 ] );
+		$response = wp_remote_get( $url, [
+			'timeout' => 15,
+			'headers' => [ 'Authorization' => 'Bearer ' . $token ],
+		] );
 
 		if ( is_wp_error( $response ) ) {
 			return $response;
