@@ -488,9 +488,10 @@ class FWW_Social_Publisher {
 			wp_send_json_error( [ 'message' => __( 'Insufficient permissions.', 'fww-social-publisher' ) ] );
 		}
 
-		$options = get_option( 'fww_social_publisher_options', [] );
+		$token   = sanitize_text_field( wp_unslash( $_POST['token']   ?? '' ) );
+		$page_id = sanitize_text_field( wp_unslash( $_POST['page_id'] ?? '' ) );
 		$api     = new FWW_Facebook_API();
-		$result  = $api->test_connection( $options['facebook_page_id'] ?? '', $options['facebook_token'] ?? '' );
+		$result  = $api->test_connection( $page_id, $token );
 
 		if ( is_wp_error( $result ) ) {
 			wp_send_json_error( [ 'message' => $result->get_error_message() ] );
@@ -512,10 +513,10 @@ class FWW_Social_Publisher {
 			wp_send_json_error( [ 'message' => __( 'Insufficient permissions.', 'fww-social-publisher' ) ] );
 		}
 
-		$options = get_option( 'fww_social_publisher_options', [] );
-		$token   = ! empty( $options['instagram_token'] ) ? $options['instagram_token'] : ( $options['facebook_token'] ?? '' );
-		$api     = new FWW_Instagram_API();
-		$result  = $api->test_connection( $options['instagram_account_id'] ?? '', $token );
+		$token      = sanitize_text_field( wp_unslash( $_POST['token']      ?? '' ) );
+		$account_id = sanitize_text_field( wp_unslash( $_POST['account_id'] ?? '' ) );
+		$api        = new FWW_Instagram_API();
+		$result     = $api->test_connection( $account_id, $token );
 
 		if ( is_wp_error( $result ) ) {
 			wp_send_json_error( [ 'message' => $result->get_error_message() ] );
@@ -537,9 +538,10 @@ class FWW_Social_Publisher {
 			wp_send_json_error( [ 'message' => __( 'Insufficient permissions.', 'fww-social-publisher' ) ] );
 		}
 
-		$options = get_option( 'fww_social_publisher_options', [] );
-		$api     = new FWW_Telegram_API();
-		$result  = $api->test_connection( $options['telegram_chat_id'] ?? '', $options['telegram_bot_token'] ?? '' );
+		$bot_token = sanitize_text_field( wp_unslash( $_POST['bot_token'] ?? '' ) );
+		$chat_id   = sanitize_text_field( wp_unslash( $_POST['chat_id']   ?? '' ) );
+		$api       = new FWW_Telegram_API();
+		$result    = $api->test_connection( $chat_id, $bot_token );
 
 		if ( is_wp_error( $result ) ) {
 			wp_send_json_error( [ 'message' => $result->get_error_message() ] );

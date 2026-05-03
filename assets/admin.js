@@ -172,8 +172,10 @@
 			url:  fwwSP.ajax_url,
 			type: 'POST',
 			data: {
-				action: 'fww_test_facebook',
-				nonce:  fwwSP.nonce_settings
+				action:   'fww_test_facebook',
+				nonce:    fwwSP.nonce_settings,
+				token:    $( '#fww_facebook_token' ).val(),
+				page_id:  $( '#fww_facebook_page_id' ).val()
 			},
 			success: function ( res ) {
 				$result.text( res.data.message )
@@ -203,8 +205,10 @@
 			url:  fwwSP.ajax_url,
 			type: 'POST',
 			data: {
-				action: 'fww_test_telegram',
-				nonce:  fwwSP.nonce_settings
+				action:     'fww_test_telegram',
+				nonce:      fwwSP.nonce_settings,
+				bot_token:  $( '#fww_telegram_bot_token' ).val(),
+				chat_id:    $( '#fww_telegram_chat_id' ).val()
 			},
 			success: function ( res ) {
 				$result.text( res.data.message )
@@ -234,8 +238,10 @@
 			url:  fwwSP.ajax_url,
 			type: 'POST',
 			data: {
-				action: 'fww_test_instagram',
-				nonce:  fwwSP.nonce_settings
+				action:      'fww_test_instagram',
+				nonce:       fwwSP.nonce_settings,
+				token:       $( '#fww_instagram_token' ).val() || $( '#fww_facebook_token' ).val(),
+				account_id:  $( '#fww_instagram_account_id' ).val()
 			},
 			success: function ( res ) {
 				$result.text( res.data.message )
