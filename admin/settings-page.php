@@ -132,6 +132,62 @@ if ( $wpdb->last_error ) {
 			</tr>
 		</table>
 
+		<h2><?php esc_html_e( 'Telegram', 'fww-social-publisher' ); ?></h2>
+		<table class="form-table" role="presentation">
+			<tr>
+				<th scope="row">
+					<label for="fww_telegram_bot_token">
+						<?php esc_html_e( 'Bot Token', 'fww-social-publisher' ); ?>
+					</label>
+				</th>
+				<td>
+					<input type="password"
+					       id="fww_telegram_bot_token"
+					       name="fww_social_publisher_options[telegram_bot_token]"
+					       value="<?php echo esc_attr( $options['telegram_bot_token'] ?? '' ); ?>"
+					       class="regular-text"
+					       autocomplete="new-password" />
+					<p class="description">
+						<?php esc_html_e( 'Token from @BotFather, e.g. 123456789:ABCdef…', 'fww-social-publisher' ); ?>
+					</p>
+				</td>
+			</tr>
+			<tr>
+				<th scope="row">
+					<label for="fww_telegram_chat_id">
+						<?php esc_html_e( 'Channel ID', 'fww-social-publisher' ); ?>
+					</label>
+				</th>
+				<td>
+					<input type="text"
+					       id="fww_telegram_chat_id"
+					       name="fww_social_publisher_options[telegram_chat_id]"
+					       value="<?php echo esc_attr( $options['telegram_chat_id'] ?? '' ); ?>"
+					       class="regular-text"
+					       placeholder="@fww_wolfurt or -1001234567890" />
+					<p class="description">
+						<?php esc_html_e( 'Public channel username (e.g. @fww_wolfurt) or numeric chat ID. The bot must be admin of the channel.', 'fww-social-publisher' ); ?>
+					</p>
+					<button type="button" id="fww-test-telegram" class="button">
+						<?php esc_html_e( 'Test Connection', 'fww-social-publisher' ); ?>
+					</button>
+					<span id="fww-test-telegram-result" class="fww-test-result"></span>
+				</td>
+			</tr>
+			<tr>
+				<th scope="row"><?php esc_html_e( 'Auto-Post', 'fww-social-publisher' ); ?></th>
+				<td>
+					<label>
+						<input type="checkbox"
+						       name="fww_social_publisher_options[auto_post_telegram]"
+						       value="1"
+						       <?php checked( 1, $options['auto_post_telegram'] ?? 1 ); ?> />
+						<?php esc_html_e( 'Automatically post to Telegram when a post is published', 'fww-social-publisher' ); ?>
+					</label>
+				</td>
+			</tr>
+		</table>
+
 		<h2><?php esc_html_e( 'Content &amp; Filters', 'fww-social-publisher' ); ?></h2>
 		<table class="form-table" role="presentation">
 			<tr>

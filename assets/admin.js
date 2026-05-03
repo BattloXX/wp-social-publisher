@@ -90,6 +90,38 @@
 	} );
 
 	// -------------------------------------------------------------------------
+	// Post to Telegram
+	// -------------------------------------------------------------------------
+
+	$( document ).on( 'click', '#fww-post-telegram', function () {
+		var $btn      = $( this );
+		var $spinner  = $( '#fww-telegram-spinner' );
+		var $feedback = $( '#fww-telegram-feedback' );
+
+		startSpinner( $btn, $spinner );
+		$feedback.text( fwwSP.i18n.posting ).removeClass( 'success error' );
+
+		$.ajax( {
+			url:  fwwSP.ajax_url,
+			type: 'POST',
+			data: {
+				action:  'fww_post_to_telegram',
+				nonce:   fwwSP.nonce_meta_box,
+				post_id: fwwSP.post_id
+			},
+			success: function ( res ) {
+				setFeedback( $feedback, res.data.message, res.success );
+			},
+			error: function () {
+				setFeedback( $feedback, 'Request failed.', false );
+			},
+			complete: function () {
+				stopSpinner( $btn, $spinner );
+			}
+		} );
+	} );
+
+	// -------------------------------------------------------------------------
 	// Copy WhatsApp text to clipboard
 	// -------------------------------------------------------------------------
 
@@ -141,6 +173,37 @@
 			type: 'POST',
 			data: {
 				action: 'fww_test_facebook',
+				nonce:  fwwSP.nonce_settings
+			},
+			success: function ( res ) {
+				$result.text( res.data.message )
+				       .css( 'color', res.success ? '#00a32a' : '#d63638' );
+			},
+			error: function () {
+				$result.text( 'Request failed.' ).css( 'color', '#d63638' );
+			},
+			complete: function () {
+				$btn.prop( 'disabled', false );
+			}
+		} );
+	} );
+
+	// -------------------------------------------------------------------------
+	// Test Telegram connection (settings page)
+	// -------------------------------------------------------------------------
+
+	$( document ).on( 'click', '#fww-test-telegram', function () {
+		var $btn    = $( this );
+		var $result = $( '#fww-test-telegram-result' );
+
+		$btn.prop( 'disabled', true );
+		$result.text( fwwSP.i18n.testing ).css( 'color', '#646970' );
+
+		$.ajax( {
+			url:  fwwSP.ajax_url,
+			type: 'POST',
+			data: {
+				action: 'fww_test_telegram',
 				nonce:  fwwSP.nonce_settings
 			},
 			success: function ( res ) {

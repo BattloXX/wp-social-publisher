@@ -32,8 +32,10 @@ class FWW_Social_Publisher {
 
 		add_action( 'wp_ajax_fww_post_to_facebook', [ $this, 'ajax_post_to_facebook' ] );
 		add_action( 'wp_ajax_fww_post_to_instagram',[ $this, 'ajax_post_to_instagram' ] );
+		add_action( 'wp_ajax_fww_post_to_telegram', [ $this, 'ajax_post_to_telegram' ] );
 		add_action( 'wp_ajax_fww_test_facebook',    [ $this, 'ajax_test_facebook' ] );
 		add_action( 'wp_ajax_fww_test_instagram',   [ $this, 'ajax_test_instagram' ] );
+		add_action( 'wp_ajax_fww_test_telegram',    [ $this, 'ajax_test_telegram' ] );
 	}
 
 	// -------------------------------------------------------------------------
@@ -46,6 +48,7 @@ class FWW_Social_Publisher {
 		add_option( 'fww_social_publisher_options', [
 			'auto_post_facebook'  => 1,
 			'auto_post_instagram' => 1,
+			'auto_post_telegram'  => 1,
 			'category_filter'     => [],
 			'ki_meta_key'         => '_ki_social_media_text',
 		] );
@@ -114,8 +117,11 @@ class FWW_Social_Publisher {
 		$clean['facebook_page_id']     = sanitize_text_field( $input['facebook_page_id']     ?? '' );
 		$clean['instagram_account_id'] = sanitize_text_field( $input['instagram_account_id'] ?? '' );
 		$clean['instagram_token']      = sanitize_text_field( $input['instagram_token']      ?? '' );
+		$clean['telegram_bot_token']   = sanitize_text_field( $input['telegram_bot_token']   ?? '' );
+		$clean['telegram_chat_id']     = sanitize_text_field( $input['telegram_chat_id']     ?? '' );
 		$clean['auto_post_facebook']   = ! empty( $input['auto_post_facebook'] )  ? 1 : 0;
 		$clean['auto_post_instagram']  = ! empty( $input['auto_post_instagram'] ) ? 1 : 0;
+		$clean['auto_post_telegram']   = ! empty( $input['auto_post_telegram'] )  ? 1 : 0;
 		$clean['ki_meta_key']          = sanitize_key( $input['ki_meta_key'] ?? '_ki_social_media_text' );
 
 		$cats = $input['category_filter'] ?? [];
@@ -204,6 +210,12 @@ class FWW_Social_Publisher {
 		if ( ! empty( $options['auto_post_instagram'] ) ) {
 			if ( ! $this->do_post_instagram( $post->ID ) ) {
 				$failed[] = 'Instagram';
+			}
+		}
+
+		if ( ! empty( $options['auto_post_telegram'] ) ) {
+			if ( ! $this->do_post_telegram( $post->ID ) ) {
+				$failed[] = 'Telegram';
 			}
 		}
 
@@ -322,6 +334,50 @@ class FWW_Social_Publisher {
 		return true;
 	}
 
+	public function do_post_telegram( int $post_id ): bool {
+		if ( get_post_meta( $post_id, '_fww_telegram_posted', true ) ) {
+			return false;
+		}
+
+		$options  = get_option( 'fww_social_publisher_options', [] );
+		$token    = $options['telegram_bot_token'] ?? '';
+		$chat_id  = $options['telegram_chat_id']   ?? '';
+
+		if ( empty( $token ) || empty( $chat_id ) ) {
+			$this->log( $post_id, 'telegram', 'error', __( 'Telegram credentials not configured.', 'fww-social-publisher' ) );
+			return false;
+		}
+
+		$title         = get_the_title( $post_id );
+		$social_text   = $this->get_social_text( $post_id );
+		$permalink     = get_permalink( $post_id );
+		$thumbnail_id  = get_post_thumbnail_id( $post_id );
+		$image_url     = $thumbnail_id ? wp_get_attachment_image_url( $thumbnail_id, 'large' ) : '';
+
+		// Build HTML-formatted message.
+		$text = '<b>' . htmlspecialchars( $title, ENT_QUOTES | ENT_HTML5, 'UTF-8' ) . '</b>'
+			. "\n\n"
+			. htmlspecialchars( $social_text, ENT_QUOTES | ENT_HTML5, 'UTF-8' )
+			. "\n\n"
+			. $permalink;
+
+		$api    = new FWW_Telegram_API();
+		$result = $api->post( $chat_id, $token, $text, $image_url );
+
+		if ( is_wp_error( $result ) ) {
+			$this->log( $post_id, 'telegram', 'error', $result->get_error_message() );
+			return false;
+		}
+
+		update_post_meta( $post_id, '_fww_telegram_posted', current_time( 'mysql' ) );
+		$this->log(
+			$post_id, 'telegram', 'success',
+			/* translators: %s: Telegram message ID */
+			sprintf( __( 'Posted successfully. Message ID: %s', 'fww-social-publisher' ), $result )
+		);
+		return true;
+	}
+
 	// -------------------------------------------------------------------------
 	// AJAX handlers
 	// -------------------------------------------------------------------------
@@ -396,6 +452,35 @@ class FWW_Social_Publisher {
 		wp_send_json_error( [ 'message' => $msg ] );
 	}
 
+	public function ajax_post_to_telegram(): void {
+		check_ajax_referer( 'fww_meta_box_nonce', 'nonce' );
+
+		if ( ! current_user_can( 'edit_posts' ) ) {
+			wp_send_json_error( [ 'message' => __( 'Insufficient permissions.', 'fww-social-publisher' ) ] );
+		}
+
+		$post_id = absint( $_POST['post_id'] ?? 0 );
+		if ( ! $post_id ) {
+			wp_send_json_error( [ 'message' => __( 'Invalid post ID.', 'fww-social-publisher' ) ] );
+		}
+
+		delete_post_meta( $post_id, '_fww_telegram_posted' );
+		$success = $this->do_post_telegram( $post_id );
+
+		if ( $success ) {
+			$date = get_post_meta( $post_id, '_fww_telegram_posted', true );
+			wp_send_json_success( [
+				'message' => sprintf(
+					/* translators: %s: date/time */
+					__( 'Posted to Telegram on %s', 'fww-social-publisher' ),
+					esc_html( $date )
+				),
+			] );
+		}
+
+		wp_send_json_error( [ 'message' => __( 'Failed to post to Telegram. Check the log for details.', 'fww-social-publisher' ) ] );
+	}
+
 	public function ajax_test_facebook(): void {
 		check_ajax_referer( 'fww_settings_nonce', 'nonce' );
 
@@ -440,6 +525,30 @@ class FWW_Social_Publisher {
 			'message' => sprintf(
 				/* translators: %s: account username */
 				__( 'Connected: @%s', 'fww-social-publisher' ),
+				esc_html( $result )
+			),
+		] );
+	}
+
+	public function ajax_test_telegram(): void {
+		check_ajax_referer( 'fww_settings_nonce', 'nonce' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( [ 'message' => __( 'Insufficient permissions.', 'fww-social-publisher' ) ] );
+		}
+
+		$options = get_option( 'fww_social_publisher_options', [] );
+		$api     = new FWW_Telegram_API();
+		$result  = $api->test_connection( $options['telegram_chat_id'] ?? '', $options['telegram_bot_token'] ?? '' );
+
+		if ( is_wp_error( $result ) ) {
+			wp_send_json_error( [ 'message' => $result->get_error_message() ] );
+		}
+
+		wp_send_json_success( [
+			'message' => sprintf(
+				/* translators: %s: bot → channel info string */
+				__( 'Connected: %s', 'fww-social-publisher' ),
 				esc_html( $result )
 			),
 		] );

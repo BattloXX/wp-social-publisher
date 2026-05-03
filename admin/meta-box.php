@@ -4,8 +4,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 $publisher    = FWW_Social_Publisher::get_instance();
-$fb_posted    = get_post_meta( $post->ID, '_fww_facebook_posted', true );
+$fb_posted    = get_post_meta( $post->ID, '_fww_facebook_posted',  true );
 $ig_posted    = get_post_meta( $post->ID, '_fww_instagram_posted', true );
+$tg_posted    = get_post_meta( $post->ID, '_fww_telegram_posted',  true );
 $has_image    = (bool) get_post_thumbnail_id( $post->ID );
 $social_text  = $publisher->get_social_text( $post->ID );
 $permalink    = get_permalink( $post->ID );
@@ -76,6 +77,34 @@ $whatsapp_text = get_the_title( $post->ID ) . "\n\n" . $social_text . "\n\n" . $
 		</button>
 		<span class="fww-spinner" id="fww-instagram-spinner"></span>
 		<span class="fww-feedback" id="fww-instagram-feedback" aria-live="polite"></span>
+	</div>
+
+	<?php /* ---- Telegram ---- */ ?>
+	<div class="fww-platform-row">
+		<p class="fww-platform-status">
+			<strong><?php esc_html_e( 'Telegram', 'fww-social-publisher' ); ?></strong>
+			<?php if ( $tg_posted ) : ?>
+				<span class="fww-badge fww-badge-posted">
+					<?php printf(
+						esc_html__( 'Posted %s', 'fww-social-publisher' ),
+						esc_html( $tg_posted )
+					); ?>
+				</span>
+			<?php else : ?>
+				<span class="fww-badge fww-badge-pending">
+					<?php esc_html_e( 'Not posted', 'fww-social-publisher' ); ?>
+				</span>
+			<?php endif; ?>
+		</p>
+
+		<button type="button"
+		        id="fww-post-telegram"
+		        class="button button-secondary fww-action-btn"
+		        data-post-id="<?php echo esc_attr( $post->ID ); ?>">
+			<?php esc_html_e( 'Post to Telegram now', 'fww-social-publisher' ); ?>
+		</button>
+		<span class="fww-spinner" id="fww-telegram-spinner"></span>
+		<span class="fww-feedback" id="fww-telegram-feedback" aria-live="polite"></span>
 	</div>
 
 	<?php /* ---- WhatsApp ---- */ ?>
