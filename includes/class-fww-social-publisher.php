@@ -50,7 +50,7 @@ class FWW_Social_Publisher {
 			'auto_post_instagram' => 1,
 			'auto_post_telegram'  => 1,
 			'category_filter'     => [],
-			'ki_meta_key'         => '_ki_social_media_text',
+			'ki_meta_key'         => '_claude_social_media_text',
 		] );
 	}
 
@@ -560,16 +560,17 @@ class FWW_Social_Publisher {
 
 	/**
 	 * Returns the social media text for a post.
-	 * Priority: KI Content Creator meta field → post excerpt → trimmed content.
+	 * Priority: WP-Claude-Optimizer meta field (configurable) → post excerpt → trimmed content.
+	 * Handles the B64: prefix used by WP-Claude-Optimizer to store base64-encoded values.
 	 */
 	public function get_social_text( int $post_id ): string {
 		$options  = get_option( 'fww_social_publisher_options', [] );
-		$meta_key = $options['ki_meta_key'] ?? '_ki_social_media_text';
+		$meta_key = $options['ki_meta_key'] ?? '_claude_social_media_text';
 
 		if ( ! empty( $meta_key ) ) {
-			$ai_text = get_post_meta( $post_id, $meta_key, true );
-			if ( ! empty( $ai_text ) ) {
-				return wp_strip_all_tags( $ai_text );
+			$raw = get_post_meta( $post_id, $meta_key, true );
+			if ( ! empty( $raw ) ) {
+				return wp_strip_all_tags( $this->decode_meta_value( $raw ) );
 			}
 		}
 
@@ -579,6 +580,36 @@ class FWW_Social_Publisher {
 		}
 
 		return wp_trim_words( wp_strip_all_tags( $post->post_content ), 55 );
+	}
+
+	/**
+	 * Returns the WhatsApp text for a post.
+	 * Uses the dedicated _claude_whatsapp_text from WP-Claude-Optimizer if present,
+	 * otherwise constructs title + social text + permalink.
+	 */
+	public function get_whatsapp_text( int $post_id ): string {
+		$raw = get_post_meta( $post_id, '_claude_whatsapp_text', true );
+		if ( ! empty( $raw ) ) {
+			return wp_strip_all_tags( $this->decode_meta_value( $raw ) );
+		}
+
+		return get_the_title( $post_id )
+			. "\n\n"
+			. $this->get_social_text( $post_id )
+			. "\n\n"
+			. (string) get_permalink( $post_id );
+	}
+
+	/**
+	 * Decodes a value stored by WP-Claude-Optimizer.
+	 * Values are optionally base64-encoded with a "B64:" prefix.
+	 */
+	private function decode_meta_value( string $value ): string {
+		if ( str_starts_with( $value, 'B64:' ) ) {
+			$decoded = base64_decode( substr( $value, 4 ), true );
+			return $decoded !== false ? $decoded : $value;
+		}
+		return $value;
 	}
 
 	private function post_matches_category_filter( int $post_id ): bool {

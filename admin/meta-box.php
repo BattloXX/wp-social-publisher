@@ -8,10 +8,9 @@ $fb_posted    = get_post_meta( $post->ID, '_fww_facebook_posted',  true );
 $ig_posted    = get_post_meta( $post->ID, '_fww_instagram_posted', true );
 $tg_posted    = get_post_meta( $post->ID, '_fww_telegram_posted',  true );
 $has_image    = (bool) get_post_thumbnail_id( $post->ID );
-$social_text  = $publisher->get_social_text( $post->ID );
-$permalink    = (string) get_permalink( $post->ID );
-
-$whatsapp_text = get_the_title( $post->ID ) . "\n\n" . $social_text . "\n\n" . $permalink;
+$social_text   = $publisher->get_social_text( $post->ID );
+$permalink     = (string) get_permalink( $post->ID );
+$whatsapp_text = $publisher->get_whatsapp_text( $post->ID );
 ?>
 <div id="fww-sp-metabox">
 

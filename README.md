@@ -13,8 +13,23 @@ WordPress-Plugin für [Feuerwehr Wolfurt](https://feuerwehr.wolfurt.at) – auto
 | **Telegram** | ✅ | ✅ | Bild + HTML-formatierter Text via Bot API |
 | **WhatsApp** | — | ✅ | Text in Zwischenablage kopieren + Deep-Link zum Öffnen |
 
-### Beitragstext
-Das Plugin verwendet als Beitragstext bevorzugt den **Social-Media-Text aus dem KI Content Creator** (konfigurierbar über den Post-Meta-Key). Ist dieser nicht vorhanden, wird automatisch auf den Auszug oder den Beitragsinhalt zurückgegriffen.
+### Beitragstext & WP-Claude-Optimizer Integration
+Das Plugin ist nativ mit **[WP-Claude-Optimizer](https://github.com/BattloXX/WP-Claude-Optimizer)** integriert. Ist der dort generierte Social-Media-Text vorhanden (`_claude_social_media_text`), wird dieser automatisch verwendet. Für den WhatsApp-Text wird entsprechend `_claude_whatsapp_text` bevorzugt. Fehlen diese Felder, greift das Plugin auf Auszug bzw. Beitragsinhalt zurück.
+
+| Priorität | Quelle | Meta-Key |
+|:---------:|--------|----------|
+| 1 | WP-Claude-Optimizer (Social) | `_claude_social_media_text` |
+| 2 | Beitrags-Auszug | *(post_excerpt)* |
+| 3 | Beitragsinhalt (gekürzt) | *(post_content, 55 Wörter)* |
+
+WhatsApp-Text zusätzlich:
+
+| Priorität | Quelle | Meta-Key |
+|:---------:|--------|----------|
+| 1 | WP-Claude-Optimizer (WhatsApp) | `_claude_whatsapp_text` |
+| 2 | Titel + Social-Text + Link | *(konstruiert)* |
+
+> **Hinweis:** WP-Claude-Optimizer speichert Werte base64-kodiert mit `B64:`-Prefix. FWW Social Publisher erkennt und dekodiert dieses Format automatisch.
 
 ---
 
@@ -91,7 +106,7 @@ Unter **Einstellungen → FWW Social Publisher**:
 | Automatisch auf Instagram posten | Checkbox (Standard: aktiv) |
 | Automatisch auf Telegram posten | Checkbox (Standard: aktiv) |
 | Kategorie-Filter | Nur aus bestimmten Kategorien posten (leer = alle) |
-| KI Content Creator Meta-Key | Post-Meta-Schlüssel für den Social-Media-Text (Standard: `_ki_social_media_text`) |
+| WP-Claude-Optimizer Meta-Key | Post-Meta-Schlüssel für den Social-Media-Text (Standard: `_claude_social_media_text`) |
 
 ---
 

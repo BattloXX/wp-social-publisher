@@ -193,17 +193,17 @@ if ( $wpdb->last_error ) {
 			<tr>
 				<th scope="row">
 					<label for="fww_ki_meta_key">
-						<?php esc_html_e( 'KI Content Creator – Meta Key', 'fww-social-publisher' ); ?>
+						<?php esc_html_e( 'WP-Claude-Optimizer – Meta Key', 'fww-social-publisher' ); ?>
 					</label>
 				</th>
 				<td>
 					<input type="text"
 					       id="fww_ki_meta_key"
 					       name="fww_social_publisher_options[ki_meta_key]"
-					       value="<?php echo esc_attr( $options['ki_meta_key'] ?? '_ki_social_media_text' ); ?>"
+					       value="<?php echo esc_attr( $options['ki_meta_key'] ?? '_claude_social_media_text' ); ?>"
 					       class="regular-text" />
 					<p class="description">
-						<?php esc_html_e( 'Post meta key where the KI Content Creator plugin stores the social media text. Falls back to excerpt or post content if empty.', 'fww-social-publisher' ); ?>
+						<?php esc_html_e( 'Post meta key for the AI-generated social media text. Default: _claude_social_media_text (WP-Claude-Optimizer). Base64-encoded values (B64: prefix) are decoded automatically. Falls back to post excerpt or content if the field is empty.', 'fww-social-publisher' ); ?>
 					</p>
 				</td>
 			</tr>
